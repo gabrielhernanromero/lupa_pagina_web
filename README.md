@@ -36,7 +36,7 @@ npm run dev                  # http://localhost:3000
 
 | Variable | Uso |
 | --- | --- |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número para los links de WhatsApp (`5491154661480`). Si no está, se usa ese mismo por defecto. |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | WhatsApp Business de Lupa en formato wa.me (`5491172634803` = 11 7263-4803). Si no está, se usa ese mismo por defecto. El número visible del sitio se arma solo a partir de este. |
 | `NEXT_PUBLIC_GA_ID` | ID de GA4 (`G-XXXXXXXXXX`). Si está vacío, GA no se carga. |
 
 En Vercel: *Project → Settings → Environment Variables*.

@@ -4,7 +4,14 @@
  * (gabriel@, priscila@, facturacion@, soporte@, cuentas@).
  */
 
-const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491154661480';
+/** WhatsApp Business de Lupa: 11 7263-4803 (formato wa.me: 54 + 9 + área + número). */
+const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491172634803';
+
+/** "5491172634803" → "+54 9 11 7263-4803". Otros formatos se muestran como "+<número>". */
+function formatWhatsAppDisplay(n: string): string {
+  const amba = n.match(/^549(11)(\d{4})(\d{4})$/);
+  return amba ? `+54 9 ${amba[1]} ${amba[2]}-${amba[3]}` : `+${n}`;
+}
 
 export const siteConfig = {
   name: 'Lupa Servicios Digitales',
@@ -23,8 +30,8 @@ export const siteConfig = {
   whatsapp: {
     /** Formato wa.me: internacional, sin "+" ni espacios. */
     number: whatsappNumber,
-    /** Texto visible. Si cambia el número, actualizar también este valor. */
-    display: '+54 9 11 5466-1480',
+    /** Texto visible, derivado del número. */
+    display: formatWhatsAppDisplay(whatsappNumber),
     e164: `+${whatsappNumber}`,
   },
 
