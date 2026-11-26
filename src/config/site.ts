@@ -4,8 +4,21 @@
  * (gabriel@, priscila@, facturacion@, soporte@, cuentas@).
  */
 
-/** WhatsApp Business de Lupa: 11 7263-4803 (formato wa.me: 54 + 9 + área + número). */
-const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491172634803';
+/**
+ * Normaliza un número argentino al formato de wa.me (54 + 9 + área + número).
+ * Acepta "11 7263-4803", "011 7263-4803", "+54 9 11 7263-4803", etc.
+ * Sin esto, "1172634803" se interpretaría como un número de EE. UU. (+1).
+ */
+function normalizeWhatsAppNumber(raw: string): string {
+  let n = raw.replace(/\D/g, '');
+  if (n.startsWith('00')) n = n.slice(2); // prefijo internacional
+  if (n.startsWith('0') && n.length === 11) n = n.slice(1); // 011 7263-4803
+  if (n.length === 10 && !n.startsWith('54')) n = `549${n}`; // área + número, sin país
+  return n;
+}
+
+/** WhatsApp Business de Lupa: 11 7263-4803. */
+const whatsappNumber = normalizeWhatsAppNumber(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491172634803');
 
 /** "5491172634803" → "+54 9 11 7263-4803". Otros formatos se muestran como "+<número>". */
 function formatWhatsAppDisplay(n: string): string {
