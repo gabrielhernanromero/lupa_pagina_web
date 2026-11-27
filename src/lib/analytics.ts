@@ -1,4 +1,13 @@
-export type OrigenWhatsApp = 'header' | 'hero' | 'plan' | 'casos' | 'footer' | 'flotante' | 'formulario' | '404';
+export type OrigenWhatsApp =
+  | 'header'
+  | 'hero'
+  | 'plan'
+  | 'casos'
+  | 'footer'
+  | 'flotante'
+  | 'formulario'
+  | '404'
+  | 'blog';
 
 declare global {
   interface Window {

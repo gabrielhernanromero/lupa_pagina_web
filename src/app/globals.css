@@ -73,6 +73,18 @@
   }
 }
 
+/* Editor del panel (TipTap): texto de ayuda cuando está vacío. */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #64748b;
+  pointer-events: none;
+}
+.tiptap img.ProseMirror-selectednode {
+  outline: 2px solid #2dd4bf;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

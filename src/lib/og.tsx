@@ -91,6 +91,56 @@ export async function renderOgImage() {
   );
 }
 
+/** Imagen para compartir un artículo del blog: título del artículo sobre el fondo de marca. */
+export async function renderPostOgImage(title: string, tag?: string) {
+  const fontSize = title.length > 90 ? 52 : title.length > 60 ? 62 : 74;
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '72px 80px',
+          backgroundColor: '#060A13',
+          backgroundImage: 'radial-gradient(circle at 92% 8%, rgba(56,189,248,0.22), rgba(6,10,19,0) 45%)',
+          fontFamily: 'Sora',
+          position: 'relative',
+        }}
+      >
+        <div style={{ position: 'absolute', right: -80, top: 160, display: 'flex', opacity: 0.12 }}>
+          <LensSvg size={520} ring={6} handle={8} />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          <LensSvg size={52} />
+          <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: '0.02em', color: '#F1F5F9' }}>LUPA</span>
+          <span style={{ fontSize: 26, fontWeight: 600, color: '#2DD4BF', marginLeft: 10 }}>· Blog</span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22, maxWidth: 1000 }}>
+          {tag && (
+            <span style={{ fontSize: 24, fontWeight: 600, color: '#2DD4BF', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+              {tag}
+            </span>
+          )}
+          <span style={{ fontSize, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#F1F5F9' }}>
+            {title}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: 26, fontWeight: 600 }}>
+          <span style={{ color: '#94A3B8' }}>{siteConfig.lema}</span>
+          <span style={{ color: '#2DD4BF' }}>{siteConfig.domain}</span>
+        </div>
+      </div>
+    ),
+    { ...ogSize, fonts: await loadSora() },
+  );
+}
+
 /** Ícono cuadrado con fondo oscuro (apple-touch-icon / logo en JSON-LD). */
 export function renderSquareIcon(size: number) {
   return new ImageResponse(

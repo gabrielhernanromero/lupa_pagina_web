@@ -1,11 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Sora } from 'next/font/google';
-import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { GradientDefs } from '@/components/brand/gradient-defs';
-import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
 import { MotionProvider } from '@/components/motion/motion-provider';
 import { siteConfig } from '@/config/site';
 import './globals.css';
@@ -21,7 +17,6 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
-  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'es_AR',
@@ -44,8 +39,6 @@ export const viewport: Viewport = {
   colorScheme: 'dark',
 };
 
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es-AR" className={`${sora.variable} ${inter.variable}`}>
@@ -57,23 +50,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <GradientDefs />
-        <MotionProvider>
-          {/* overflow-x: clip (no hidden) para no romper el header sticky */}
-          <div className="min-h-screen overflow-x-clip">
-            <a
-              href="#contenido"
-              className="sr-only z-[60] rounded-lg bg-brand px-4 py-2 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
-            >
-              Saltar al contenido
-            </a>
-            <Header />
-            <main id="contenido">{children}</main>
-            <Footer />
-          </div>
-          <FloatingWhatsApp />
-        </MotionProvider>
+        <MotionProvider>{children}</MotionProvider>
       </body>
-      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }

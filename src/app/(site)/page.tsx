@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+
 import { Casos } from '@/components/sections/casos';
 import { Confianza } from '@/components/sections/confianza';
 import { Contacto } from '@/components/sections/contacto';
@@ -10,6 +12,10 @@ import { Problema } from '@/components/sections/problema';
 import { Proceso } from '@/components/sections/proceso';
 import { Servicios } from '@/components/sections/servicios';
 import { buildJsonLd, serializeJsonLd } from '@/lib/jsonld';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 export default function HomePage() {
   return (

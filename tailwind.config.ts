@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import typography from '@tailwindcss/typography';
 import animate from 'tailwindcss-animate';
 
 const config: Config = {
@@ -90,6 +91,46 @@ const config: Config = {
         mock: '0 40px 80px rgba(0,0,0,0.45)',
         float: '0 12px 30px rgba(0,0,0,0.45)',
       },
+      // Texto de los artículos del blog: clase `prose prose-lupa`.
+      typography: {
+        lupa: {
+          css: {
+            '--tw-prose-body': '#CBD5E1',
+            '--tw-prose-headings': '#F1F5F9',
+            '--tw-prose-lead': '#94A3B8',
+            '--tw-prose-links': '#38BDF8',
+            '--tw-prose-bold': '#F1F5F9',
+            '--tw-prose-counters': '#64748B',
+            '--tw-prose-bullets': '#2DD4BF',
+            '--tw-prose-hr': 'rgba(255,255,255,0.08)',
+            '--tw-prose-quotes': '#F1F5F9',
+            '--tw-prose-quote-borders': '#2DD4BF',
+            '--tw-prose-captions': '#64748B',
+            '--tw-prose-code': '#F1F5F9',
+            '--tw-prose-pre-code': '#CBD5E1',
+            '--tw-prose-pre-bg': '#0D1422',
+            '--tw-prose-th-borders': 'rgba(255,255,255,0.14)',
+            '--tw-prose-td-borders': 'rgba(255,255,255,0.08)',
+            'h2, h3, h4': {
+              fontFamily: 'var(--font-sora), ui-sans-serif, system-ui, sans-serif',
+              letterSpacing: '-0.01em',
+            },
+            a: { textDecoration: 'none', fontWeight: '500' },
+            'a:hover': { color: '#2DD4BF' },
+            blockquote: {
+              fontStyle: 'normal',
+              fontWeight: '400',
+              backgroundColor: 'rgba(45,212,191,0.05)',
+              borderRadius: '0 12px 12px 0',
+              padding: '0.75em 1.25em',
+            },
+            'blockquote p:first-of-type::before': { content: 'none' },
+            'blockquote p:last-of-type::after': { content: 'none' },
+            img: { borderRadius: '14px' },
+            code: { fontWeight: '500' },
+          },
+        },
+      },
       keyframes: {
         'lupa-breath': {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(45,212,191,0)' },
@@ -106,7 +147,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [animate],
+  plugins: [animate, typography],
 };
 
 export default config;

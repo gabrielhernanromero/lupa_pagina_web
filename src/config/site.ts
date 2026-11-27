@@ -62,6 +62,7 @@ export const siteConfig = {
   mensajes: {
     diagnostico: 'Hola Lupa, quiero un diagnóstico para mi empresa.',
     plan: (nombre: string) => `Hola Lupa, me interesa el plan ${nombre}. ¿Me cuentan más?`,
+    blog: (titulo: string) => `Hola Lupa, leí "${titulo}" en el blog y quiero hacer una consulta.`,
   },
 
   nav: [
@@ -70,6 +71,7 @@ export const siteConfig = {
     { label: 'Casos', href: '/#casos' },
     { label: 'Nosotros', href: '/#nosotros' },
     { label: 'Preguntas', href: '/#preguntas' },
+    { label: 'Blog', href: '/blog' },
   ],
 
   copyrightYear: 2026,

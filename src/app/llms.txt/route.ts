@@ -1,4 +1,5 @@
 import { siteConfig } from '@/config/site';
+import { getPublishedPosts } from '@/lib/blog/queries';
 import { casos } from '@/data/casos';
 import { faq } from '@/data/faq';
 import { extras, planes, tabsPlanes } from '@/data/planes';
@@ -6,10 +7,12 @@ import { servicios } from '@/data/servicios';
 import { detallePlan, precioExtra, precioLabel, precioSufijo } from '@/lib/format';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
-export const dynamic = 'force-static';
+/** Se regenera al publicar desde el panel; esto es solo un respaldo. */
+export const revalidate = 3600;
 
 /** /llms.txt (https://llmstxt.org): resumen del sitio para modelos de lenguaje, generado desde los mismos datos de la web. */
-export function GET() {
+export async function GET() {
+  const posts = await getPublishedPosts(30);
   const u = siteConfig.url;
   const lines: string[] = [
     `# ${siteConfig.name}`,
@@ -54,8 +57,12 @@ export function GET() {
     '## Páginas',
     '',
     `- [Inicio](${u}/): servicios, planes, casos, equipo y contacto`,
+    `- [Blog](${u}/blog): guías sobre sitios web, Google, redes e IA para pymes`,
     `- [Política de privacidad](${u}/privacidad)`,
     '',
+    ...(posts.length
+      ? ['## Artículos del blog', '', ...posts.map((p) => `- [${p.title}](${u}/blog/${p.slug})${p.excerpt ? `: ${p.excerpt}` : ''}`), '']
+      : []),
   ];
   return new Response(lines.join('\n'), {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },

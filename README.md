@@ -1,6 +1,6 @@
 # Lupa Servicios Digitales: sitio web
 
-Home de una sola página (con anclas) para **Lupa Servicios Digitales**. Objetivo único: que el visitante escriba por WhatsApp o complete el formulario.
+Home de una sola página (con anclas) para **Lupa Servicios Digitales**, más un **blog con panel propio** para escribir y publicar artículos. Objetivo único: que el visitante escriba por WhatsApp o complete el formulario.
 
 **Producción:** https://lupaserviciosdigitales.com
 
@@ -11,6 +11,7 @@ Home de una sola página (con anclas) para **Lupa Servicios Digitales**. Objetiv
 - **Framer Motion** (aparición al scrollear, carga diferida con `LazyMotion`)
 - **lucide-react** (íconos)
 - **@next/third-parties** (Google Analytics 4)
+- Blog: **Supabase** (base de datos + imágenes), **Auth.js / NextAuth v5** (login del panel), **TipTap** (editor de texto) y **dnd-kit** (editor de bloques)
 - Deploy en **Vercel**
 
 ## Cómo correrlo
@@ -38,12 +39,19 @@ npm run dev                  # http://localhost:3000
 | --- | --- |
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | WhatsApp Business de Lupa en formato wa.me (`5491172634803` = 11 7263-4803). Si no está, se usa ese mismo por defecto. El número visible del sitio se arma solo a partir de este. |
 | `NEXT_PUBLIC_GA_ID` | ID de GA4 (`G-XXXXXXXXXX`). Si está vacío, GA no se carga. |
+| `SUPABASE_URL` | URL del proyecto de Supabase del blog. |
+| `SUPABASE_PUBLISHABLE_KEY` | Clave *publishable* (o *anon* en proyectos viejos). Solo puede leer artículos publicados. |
+| `SUPABASE_SECRET_KEY` | Clave *secret* (o *service_role*). **Secreta**: solo la usa el servidor detrás del login. |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Usuario del panel `/admin`. |
+| `AUTH_SECRET` | Firma de la sesión del panel. Se genera con `openssl rand -base64 32`. |
+
+Sin las variables de Supabase el sitio funciona igual: el blog se muestra vacío y el panel avisa que falta conectarlo.
 
 En Vercel: *Project → Settings → Environment Variables*.
 
 ## Dónde se edita cada cosa
 
-**Ningún texto, precio ni dato de contacto está escrito dentro de los componentes.** Todo vive en:
+**Ningún texto, precio ni dato de contacto está escrito dentro de los componentes.** Los artículos del blog se escriben desde `/admin`; el resto vive en:
 
 | Archivo | Contenido |
 | --- | --- |
@@ -63,34 +71,70 @@ Formato de precios: `Intl.NumberFormat('es-AR', ARS)`. `mostrarPrecio: false` mu
 ```
 src/
   app/
-    page.tsx              Home (secciones + JSON-LD)
-    layout.tsx            Fuentes, metadata, header, footer, GA4
-    privacidad/page.tsx   Política de privacidad
+    (site)/               Web pública (header, footer y botón de WhatsApp)
+      page.tsx            Home (secciones + JSON-LD)
+      blog/               Listado y artículos (+ imagen para redes de cada artículo)
+      privacidad/         Política de privacidad
+    admin/                Panel: login, artículos y plantillas
+    api/                  posts, templates, upload y auth (solo para el panel)
+    layout.tsx            Fuentes y metadata base
     not-found.tsx         404 propia
-    sitemap.ts · robots.ts
+    sitemap.ts · robots.ts · llms.txt/route.ts
     opengraph-image.tsx · twitter-image.tsx · apple-icon.tsx · icon.svg
-    llms.txt/route.ts     /llms.txt generado desde los datos
-    blog/ servicios/ casos/ admin/   Fase 2 (carpetas vacías, sin rutas ni links)
+  proxy.ts                Redirige /admin al login si no hay sesión
   components/
-    layout/      Header, menú mobile, footer, botón flotante
-    sections/    Una sección por archivo
+    layout/      Header, footer, menú mobile, botón flotante y SiteShell
+    sections/    Una sección de la home por archivo
+    blog/        Cards, listado, encabezado, compartir y bloques del artículo
+    admin/       Editor, editor de bloques, subida de imágenes y plantillas
     ui/          Componentes base (shadcn/ui)
     motion/      Reveal (aparición al scrollear)
     brand/       Logo, gradientes e íconos
   config/site.ts
   data/
-  lib/           whatsapp.ts, format.ts, analytics.ts, jsonld.ts, og.tsx
+  lib/
+    blog/        Supabase, consultas, validación, limpieza de HTML, bloques y plantillas
+    auth.ts      Login del panel
+    whatsapp.ts, format.ts, analytics.ts, jsonld.ts, og.tsx
+supabase/schema.sql      Tablas y reglas de la base del blog
 scripts/generate-firma.mjs
 public/firma/logo-firma.png   Logo para la firma de mail (600×180, usar a 300×90)
 ```
+
+## Blog y panel `/admin`
+
+- **Blog público:** `/blog` (listado con filtro por etiqueta) y `/blog/[slug]` (artículo). Las páginas son estáticas y se regeneran solas al guardar desde el panel.
+- **Panel:** `/admin` (pide login). Desde ahí se crean, editan, publican, pasan a borrador y borran artículos.
+- **Dos formas de escribir:**
+  - *Texto libre:* editor con formato (títulos, listas, links, imágenes, citas).
+  - *Con bloques:* portada, texto, texto + imagen, galería, carrusel, resultados, video, antes/después, testimonio y ficha del proyecto, con vista previa en vivo. Hay 10 plantillas prediseñadas y se pueden guardar plantillas propias.
+- **Escribir con IA:** el panel trae un prompt listo para ChatGPT, Claude o Gemini. Se pega la respuesta y completa título, URL, resumen, etiquetas y texto.
+- Las fotos se achican y pasan a WebP en el navegador antes de subirse (máx. 2000 px).
+- Cada artículo tiene su imagen para redes con el título, JSON-LD `BlogPosting` + `BreadcrumbList`, y entra solo al `sitemap.xml` y a `/llms.txt`.
+
+### Puesta en marcha (una sola vez)
+
+1. Crear un proyecto en [supabase.com](https://supabase.com). Región: *East US (North Virginia)*, la misma donde corren por defecto las funciones de Vercel.
+2. *SQL Editor → New query*: pegar todo `supabase/schema.sql` y tocar **Run**. Crea las tablas, las reglas de seguridad y el lugar para las imágenes.
+3. *Project Settings → Data API* (URL) y *API Keys* (claves): copiar los valores a las variables de entorno de arriba, en Vercel y en `.env.local`.
+4. Cargar `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `AUTH_SECRET` y volver a publicar el sitio.
+
+### Seguridad
+
+- La web pública lee con la clave *publishable*: por las reglas de la base solo ve artículos publicados.
+- Todo lo que escribe pasa por la API del panel, que verifica la sesión en cada pedido, valida los datos y limpia el HTML (saca scripts, estilos y eventos).
+- Las imágenes se validan por su contenido real (JPG, PNG, WebP, GIF o AVIF, hasta 4 MB).
+- `/admin` y `/api` están bloqueados en `robots.txt` y el panel lleva `noindex`.
 
 ## Analítica (GA4)
 
 | Evento | Parámetros |
 | --- | --- |
-| `click_whatsapp` | `origen`: `header` · `hero` · `plan` · `casos` · `footer` · `flotante` · `formulario` · `404` (y `plan` cuando viene de una card) |
+| `click_whatsapp` | `origen`: `header` · `hero` · `plan` · `casos` · `footer` · `flotante` · `formulario` · `404` · `blog` (y `plan` cuando viene de una card) |
 | `submit_form` | `necesidad` |
 | `view_plan_tab` | `tab` |
+| `read_progress` | `slug`, `percent` (25, 50, 75 y 100 % de un artículo leído) |
+| `share` | `method` (`whatsapp`, `linkedin`, `copiar`), `slug` |
 
 ## SEO / GEO
 
@@ -118,7 +162,9 @@ public/firma/logo-firma.png   Logo para la firma de mail (600×180, usar a 300×
 - [ ] Fotos del equipo (hoy son avatares con iniciales)
 - [ ] Logo de Iron Tower (con permiso)
 - [ ] `NEXT_PUBLIC_GA_ID` en Vercel
+- [ ] Proyecto de Supabase del blog y sus variables en Vercel (ver *Puesta en marcha*)
 
 ## Fase 2
 
-Carpetas reservadas, sin páginas ni links visibles: `/blog`, `/blog/[slug]`, `/servicios/[slug]`, `/casos/[slug]` y `/admin` (Supabase + NextAuth v5 + TipTap).
+- ✅ Blog y panel `/admin` (Supabase + NextAuth v5 + TipTap).
+- Carpetas reservadas, sin páginas ni links visibles: `/servicios/[slug]` y `/casos/[slug]`.
