@@ -114,6 +114,8 @@ public/firma/logo-firma.png   Logo para la firma de mail (600×180, usar a 300×
 
 ### Puesta en marcha (una sola vez)
 
+**Hoy el blog vive en el proyecto `irontowerblog`** (compartido con el blog de Iron Tower) y sus variables ya están cargadas en Vercel para Production y Preview.
+
 Todo lo del blog en Supabase lleva el prefijo `lupa_` (tablas `lupa_posts` y `lupa_post_templates`, bucket `lupa-blog-images`). Por eso puede vivir en un proyecto que ya se usa para otra cosa, como el del blog de Iron Tower, sin tocar sus tablas ni sus imágenes.
 
 1. Elegir el proyecto de Supabase donde va a vivir el blog (uno existente o uno nuevo).
@@ -165,7 +167,6 @@ Todo lo del blog en Supabase lleva el prefijo `lupa_` (tablas `lupa_posts` y `lu
 - [ ] Fotos del equipo (hoy son avatares con iniciales)
 - [ ] Logo de Iron Tower (con permiso)
 - [ ] `NEXT_PUBLIC_GA_ID` en Vercel
-- [ ] Proyecto de Supabase del blog y sus variables en Vercel (ver *Puesta en marcha*)
 
 ## Fase 2
 
