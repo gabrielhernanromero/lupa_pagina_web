@@ -3,8 +3,11 @@ import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
 import { getPublishedSlugs } from '@/lib/blog/queries';
 
-/** Se regenera al publicar desde el panel; esto es solo un respaldo. */
-export const revalidate = 3600;
+/**
+ * Se arma en cada pedido (Google lo pide pocas veces por día), así un artículo nuevo
+ * aparece al instante. Guardado como página estática, Vercel no lo refrescaba al publicar.
+ */
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

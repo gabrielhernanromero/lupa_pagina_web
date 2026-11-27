@@ -11,6 +11,5 @@ export function revalidateBlog(slugs: (string | null | undefined)[] = []) {
   // Páginas: se regeneran en la próxima visita.
   revalidatePath('/blog');
   for (const slug of new Set(slugs.filter(Boolean))) revalidatePath(`/blog/${slug}`);
-  revalidatePath('/sitemap.xml');
   revalidatePath('/llms.txt');
 }
