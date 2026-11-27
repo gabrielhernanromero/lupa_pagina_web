@@ -4,11 +4,18 @@ import { ArrowLeft } from 'lucide-react';
 import { BlogImage } from '@/components/blog/blog-image';
 import { cn } from '@/lib/utils';
 
+export interface ArticleAuthor {
+  name: string;
+  role?: string | null;
+  url?: string | null;
+}
+
 export interface ArticleMeta {
   title?: string;
   tags?: string[];
   date?: string;
   readMinutes?: number;
+  author?: ArticleAuthor | null;
 }
 
 interface ArticleHeaderProps extends ArticleMeta {
@@ -27,6 +34,7 @@ export function ArticleHeader({
   tags = [],
   date,
   readMinutes,
+  author,
   lead,
   image,
   focalX = 50,
@@ -83,6 +91,28 @@ export function ArticleHeader({
         </h1>
 
         {lead && <p className="m-0 text-[clamp(17px,2vw,20px)] leading-[1.6] text-body">{lead}</p>}
+
+        {author && (
+          <p className="m-0 flex flex-wrap items-center gap-x-2 text-[14px] text-muted">
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-diag font-display text-[13px] font-bold text-ink"
+            >
+              {author.name.charAt(0)}
+            </span>
+            <span>
+              Por{' '}
+              {author.url && !preview ? (
+                <a href={author.url} target="_blank" rel="author noopener noreferrer" className="font-semibold text-title hover:text-teal">
+                  {author.name}
+                </a>
+              ) : (
+                <span className="font-semibold text-title">{author.name}</span>
+              )}
+              {author.role && <span> · {author.role}</span>}
+            </span>
+          </p>
+        )}
       </div>
 
       {image && (

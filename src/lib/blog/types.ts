@@ -12,6 +12,10 @@ export interface Post {
   published: boolean;
   published_at: string | null;
   template_id: string | null;
+  author_id: string | null;
+  author_name: string | null;
+  author_role: string | null;
+  author_url: string | null;
   created_at: string;
   updated_at: string;
 }

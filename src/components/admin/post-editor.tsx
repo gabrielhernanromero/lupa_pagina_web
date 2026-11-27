@@ -36,9 +36,18 @@ const BlockBuilder = dynamic(() => import('./builder/block-builder').then((m) =>
   ),
 });
 
+export interface Autor {
+  id: string;
+  nombre: string;
+}
+
 interface PostEditorProps {
   post?: Post;
   templates: PostTemplate[];
+  /** Usuarios del panel que pueden firmar artículos. */
+  autores: Autor[];
+  /** Usuario que está editando (autor por defecto de los artículos nuevos). */
+  usuarioActual?: string;
   /** id de una plantilla para arrancar un artículo nuevo con bloques. */
   initialTemplate?: string;
 }
@@ -52,7 +61,7 @@ function findTemplate(id: string, saved: PostTemplate[]): TemplateStructure | nu
   return tpl ? cloneStructure(tpl.structure) : null;
 }
 
-export function PostEditor({ post, templates: initialTemplates, initialTemplate }: PostEditorProps) {
+export function PostEditor({ post, templates: initialTemplates, initialTemplate, autores, usuarioActual }: PostEditorProps) {
   const router = useRouter();
   const isNew = !post;
   const saved = splitSavedBlocks(post?.blocks);
@@ -65,6 +74,9 @@ export function PostEditor({ post, templates: initialTemplates, initialTemplate 
   const [content, setContent] = useState(post?.content ?? '');
   const [tags, setTags] = useState<string[]>(post?.tags ?? []);
   const [cover, setCover] = useState(post?.cover_image ?? '');
+  const [authorId, setAuthorId] = useState(
+    post ? (post.author_id ?? '') : autores.some((a) => a.id === usuarioActual) ? usuarioActual! : '',
+  );
   const [published, setPublished] = useState(post?.published ?? false);
   const [savedSlug, setSavedSlug] = useState(post?.slug ?? '');
   const [mode, setMode] = useState<Mode>(saved.structure || startTemplate ? 'blocks' : 'text');
@@ -76,8 +88,8 @@ export function PostEditor({ post, templates: initialTemplates, initialTemplate 
 
   // ---- Cambios sin guardar ----
   const snapshot = useMemo(
-    () => JSON.stringify({ title, slug, excerpt, content, tags, cover, mode, structure, blocks }),
-    [title, slug, excerpt, content, tags, cover, mode, structure, blocks],
+    () => JSON.stringify({ title, slug, excerpt, content, tags, cover, authorId, mode, structure, blocks }),
+    [title, slug, excerpt, content, tags, cover, authorId, mode, structure, blocks],
   );
   const [savedSnapshot, setSavedSnapshot] = useState(snapshot);
   const dirty = snapshot !== savedSnapshot;
@@ -189,6 +201,7 @@ export function PostEditor({ post, templates: initialTemplates, initialTemplate 
         content: mode === 'text' ? content : null,
         blocks: mode === 'blocks' ? joinSavedBlocks(structure, blocks) : null,
         template_id: mode === 'blocks' && /^[0-9a-f-]{36}$/.test(templateId) ? templateId : null,
+        author_id: authorId || null,
       };
 
       setBusy(kind);
@@ -219,7 +232,7 @@ export function PostEditor({ post, templates: initialTemplates, initialTemplate 
         setBusy(null);
       }
     },
-    [title, slug, excerpt, tags, cover, mode, content, structure, blocks, templateId, isNew, post, snapshot, published, router],
+    [title, slug, excerpt, tags, cover, authorId, mode, content, structure, blocks, templateId, isNew, post, snapshot, published, router],
   );
 
   // Ctrl/Cmd + S guarda sin cambiar el estado de publicación.
@@ -360,6 +373,24 @@ export function PostEditor({ post, templates: initialTemplates, initialTemplate 
         )}
       </div>
       <div className="flex flex-col gap-1.5 p-4">
+        <label htmlFor="autor" className={ui.label}>
+          Autor
+        </label>
+        <select id="autor" value={authorId} onChange={(e) => setAuthorId(e.target.value)} className={ui.inputSm}>
+          <option value="">Equipo de Lupa (sin firma)</option>
+          {autores.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.nombre}
+            </option>
+          ))}
+        </select>
+        {autores.length === 0 && (
+          <p className="m-0 text-[12px] text-muted">
+            Para firmar artículos, creá los usuarios en <Link href="/admin/usuarios" className="text-teal">Usuarios</Link>.
+          </p>
+        )}
+      </div>
+      <div className="flex flex-col gap-1.5 p-4">
         <label htmlFor="resumen" className={ui.label}>
           Resumen para Google
         </label>
@@ -433,7 +464,12 @@ export function PostEditor({ post, templates: initialTemplates, initialTemplate 
               onStructureChange={setStructure}
               onBlocksChange={setBlocks}
               onSaveTemplate={saveTemplate}
-              meta={{ title, tags, lead: excerpt }}
+              meta={{
+                title,
+                tags,
+                lead: excerpt,
+                author: authorId ? { name: autores.find((a) => a.id === authorId)?.nombre ?? '' } : null,
+              }}
             />
           </div>
           <aside className="w-[290px] shrink-0 overflow-y-auto border-l border-line bg-ink-alt" aria-label="Configuración del artículo">

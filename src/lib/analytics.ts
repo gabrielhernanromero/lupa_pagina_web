@@ -7,7 +7,8 @@ export type OrigenWhatsApp =
   | 'flotante'
   | 'formulario'
   | '404'
-  | 'blog';
+  | 'blog'
+  | 'servicio';
 
 declare global {
   interface Window {

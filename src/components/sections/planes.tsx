@@ -1,9 +1,9 @@
 import { Reveal } from '@/components/motion/reveal';
 import { Section, SectionHeading } from '@/components/section';
-import { siteConfig } from '@/config/site';
 import { extras, planes, tabsPlanes, vigenciaPrecios } from '@/data/planes';
-import { detallePlan, precioExtra, precioLabel, precioSufijo } from '@/lib/format';
-import { PlanesTabs, type PlanView, type TabView } from './planes-tabs';
+import { precioExtra } from '@/lib/format';
+import { toPlanView } from '@/lib/plan-view';
+import { PlanesTabs, type TabView } from './planes-tabs';
 
 /**
  * Los precios se formatean acá (servidor / build) y llegan como texto al
@@ -14,21 +14,7 @@ export function Planes() {
     id: t.id,
     label: t.label,
     nota: t.nota,
-    planes: planes
-      .filter((p) => p.categoria === t.id)
-      .map<PlanView>((p) => ({
-        id: p.id,
-        nombre: p.nombre,
-        paraQuien: p.paraQuien,
-        precio: precioLabel(p),
-        sufijo: precioSufijo(p),
-        detalle: detallePlan(p),
-        incluye: p.incluye,
-        nota: p.nota ?? '',
-        destacado: Boolean(p.destacado),
-        ctaTexto: p.ctaTexto ?? 'Quiero este plan',
-        mensaje: siteConfig.mensajes.plan(p.nombre),
-      })),
+    planes: planes.filter((p) => p.categoria === t.id).map(toPlanView),
   }));
 
   return (

@@ -4,6 +4,7 @@ import { rejectIfNotAdmin } from '@/lib/admin-guard';
 import { apiError, dbError, readJson } from '@/lib/blog/api';
 import { revalidateBlog } from '@/lib/blog/revalidate';
 import { TABLES, adminClient } from '@/lib/blog/supabase';
+import { firmaDeAutor } from '@/lib/blog/usuarios';
 import { parsePostInput } from '@/lib/blog/validation';
 
 /** Crear un artículo. */
@@ -17,7 +18,11 @@ export async function POST(req: Request) {
 
   const { data, error } = await adminClient()
     .from(TABLES.posts)
-    .insert({ ...input, published_at: input.published ? new Date().toISOString() : null })
+    .insert({
+      ...input,
+      ...(await firmaDeAutor(input.author_id)),
+      published_at: input.published ? new Date().toISOString() : null,
+    })
     .select('id, slug, published')
     .single();
   if (error) return dbError('crear artículo', error);

@@ -4,6 +4,7 @@ import { rejectIfNotAdmin } from '@/lib/admin-guard';
 import { apiError, dbError, readJson } from '@/lib/blog/api';
 import { revalidateBlog } from '@/lib/blog/revalidate';
 import { TABLES, adminClient } from '@/lib/blog/supabase';
+import { firmaDeAutor } from '@/lib/blog/usuarios';
 import { isUuid, parsePostInput } from '@/lib/blog/validation';
 
 interface Params {
@@ -32,7 +33,7 @@ export async function PATCH(req: Request, { params }: Params) {
   const published_at = input.published && !existing.published_at ? new Date().toISOString() : existing.published_at;
   const { data, error } = await adminClient()
     .from(TABLES.posts)
-    .update({ ...input, published_at })
+    .update({ ...input, ...(await firmaDeAutor(input.author_id)), published_at })
     .eq('id', id)
     .select('id, slug, published')
     .single();

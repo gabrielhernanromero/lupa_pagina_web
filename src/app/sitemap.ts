@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { siteConfig } from '@/config/site';
+import { servicios } from '@/data/servicios';
 import { getPublishedSlugs } from '@/lib/blog/queries';
 
 /**
@@ -19,6 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: siteConfig.url, lastModified: now, changeFrequency: 'monthly', priority: 1 },
+    ...servicios.map((s) => ({
+      url: `${siteConfig.url}/servicios/${s.id}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    })),
     { url: `${siteConfig.url}/blog`, lastModified: lastPost ?? now, changeFrequency: 'weekly', priority: 0.7 },
     ...posts.map((p) => ({
       url: `${siteConfig.url}/blog/${p.slug}`,

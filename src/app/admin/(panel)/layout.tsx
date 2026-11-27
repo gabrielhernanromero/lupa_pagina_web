@@ -6,10 +6,12 @@ import { AdminNav } from '@/components/admin/admin-nav';
 import { ui } from '@/components/admin/styles';
 import { Logo } from '@/components/brand/logo';
 import { requireAdmin } from '@/lib/admin-guard';
+import { contarNuevas } from '@/lib/blog/consultas';
 import { isBlogConfigured } from '@/lib/blog/supabase';
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
+  const yo = await requireAdmin();
+  const nuevas = await contarNuevas();
   const configured = isBlogConfigured() && Boolean(process.env.SUPABASE_SECRET_KEY);
 
   return (
@@ -22,8 +24,11 @@ export default async function PanelLayout({ children }: { children: React.ReactN
               Panel
             </span>
           </Link>
-          <AdminNav />
+          <AdminNav nuevas={nuevas} />
           <span className="flex-1" />
+          <span className="hidden text-[13px] text-muted lg:inline" title={yo.email}>
+            {yo.nombre}
+          </span>
           <a href="/blog" target="_blank" rel="noopener" className={ui.btnGhost}>
             Ver blog <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
           </a>

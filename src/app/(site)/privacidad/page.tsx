@@ -35,10 +35,14 @@ export default function PrivacidadPage() {
 
         <Bloque titulo="Qué datos recibimos">
           <p>
-            Este sitio no tiene cuentas de usuario ni guarda los datos del formulario en un servidor propio. Cuando
-            completás el formulario de contacto, los datos que escribiste (nombre, empresa, rubro, WhatsApp, qué
-            necesitás y tu mensaje) se arman como un mensaje que se abre en WhatsApp, y recién nos llegan cuando vos lo
-            enviás. Lo mismo pasa si nos escribís por mail.
+            Cuando completás el formulario de contacto, guardamos los datos que escribiste (nombre, empresa, rubro,
+            WhatsApp, qué necesitás, tu mensaje y desde qué página nos escribiste) para poder responderte y hacer el
+            seguimiento de tu consulta. Además, el formulario abre WhatsApp con un mensaje armado con esos mismos datos.
+          </p>
+          <p>
+            No guardamos tu dirección IP: solo una huella cifrada que no permite identificarte y que usamos para frenar
+            envíos automáticos (spam). Si nos escribís por mail o por WhatsApp, recibimos los datos que nos mandes por ese
+            medio.
           </p>
           <p>
             Además, usamos Google Analytics 4 para medir de forma agregada cómo se usa el sitio (páginas vistas, clics
@@ -59,10 +63,19 @@ export default function PrivacidadPage() {
           </p>
         </Bloque>
 
+        <Bloque titulo="Cuánto tiempo los guardamos">
+          <p>
+            Mientras los necesitemos para responderte y hacer el seguimiento de tu consulta o del trabajo que hagamos
+            juntos. Podés pedirnos que los borremos cuando quieras.
+          </p>
+        </Bloque>
+
         <Bloque titulo="Servicios de terceros">
           <p>
-            La conversación por WhatsApp se rige por las políticas de WhatsApp (Meta), y la medición del sitio por las
-            de Google. El sitio está alojado en Vercel.
+            Los datos del formulario se guardan en Supabase, un servicio de base de datos con servidores en Estados
+            Unidos, y los avisos de cada consulta nos llegan por mail a través de Hostinger. El sitio está alojado en
+            Vercel. La conversación por WhatsApp se rige por las políticas de WhatsApp (Meta), y la medición del sitio por
+            las de Google.
           </p>
         </Bloque>
 

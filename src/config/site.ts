@@ -9,7 +9,7 @@
  * Acepta "11 7263-4803", "011 7263-4803", "+54 9 11 7263-4803", etc.
  * Sin esto, "1172634803" se interpretaría como un número de EE. UU. (+1).
  */
-function normalizeWhatsAppNumber(raw: string): string {
+export function normalizeWhatsAppNumber(raw: string): string {
   let n = raw.replace(/\D/g, '');
   if (n.startsWith('00')) n = n.slice(2); // prefijo internacional
   if (n.startsWith('0') && n.length === 11) n = n.slice(1); // 011 7263-4803

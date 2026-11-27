@@ -67,6 +67,7 @@ export default async function BlogPostPage({ params }: Props) {
     date: formatPostDate(publishedIso),
     readMinutes: readingMinutes(postPlainText(post)),
     lead: post.excerpt,
+    author: post.author_name ? { name: post.author_name, role: post.author_role, url: post.author_url } : null,
   };
   const { structure, blocks } = splitSavedBlocks(post.blocks);
 
@@ -86,7 +87,15 @@ export default async function BlogPostPage({ params }: Props) {
         dateModified: post.updated_at,
         inLanguage: siteConfig.locale,
         keywords: post.tags.join(', ') || undefined,
-        author: { '@id': orgId },
+        author: post.author_name
+          ? {
+              '@type': 'Person',
+              name: post.author_name,
+              ...(post.author_role && { jobTitle: post.author_role }),
+              ...(post.author_url && { url: post.author_url, sameAs: [post.author_url] }),
+              worksFor: { '@id': orgId },
+            }
+          : { '@id': orgId },
         publisher: { '@id': orgId },
         isPartOf: { '@id': `${siteConfig.url}/blog#blog` },
       },

@@ -57,6 +57,7 @@ export async function GET() {
     '## Páginas',
     '',
     `- [Inicio](${u}/): servicios, planes, casos, equipo y contacto`,
+    ...servicios.map((s) => `- [${s.titulo}](${u}/servicios/${s.id}): ${s.bajada}`),
     `- [Blog](${u}/blog): guías sobre sitios web, Google, redes e IA para pymes`,
     `- [Política de privacidad](${u}/privacidad)`,
     '',

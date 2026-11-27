@@ -41,7 +41,7 @@ interface BlockBuilderProps {
   onStructureChange: (s: TemplateStructure) => void;
   onBlocksChange: (b: PostBlocks) => void;
   onSaveTemplate: () => void;
-  meta: { title?: string; tags?: string[]; lead?: string | null };
+  meta: { title?: string; tags?: string[]; lead?: string | null; author?: { name: string } | null };
 }
 
 const LAYOUTS: { label: string; spans: ColumnSpan[] }[] = [

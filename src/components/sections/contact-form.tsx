@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 import { Input } from '@/components/ui/input';
@@ -47,10 +47,43 @@ function armarMensaje(f: FormState): string {
 
 const labelClasses = 'flex flex-col gap-[7px] text-[13px] font-medium text-list';
 
-/** Formulario sin backend: valida, arma el mensaje y abre WhatsApp. */
+/**
+ * Guarda la consulta en la bandeja del panel (sin esperar la respuesta) y abre WhatsApp con el mensaje armado.
+ * Si la persona no termina de mandar el WhatsApp, la consulta igual nos queda.
+ */
+function guardarConsulta(f: FormState, trampa: string, desde: number) {
+  try {
+    fetch('/api/consultas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // keepalive: el envío sigue aunque el navegador cambie de pestaña al abrir WhatsApp.
+      keepalive: true,
+      body: JSON.stringify({
+        nombre: f.nombre.trim(),
+        empresa: f.empresa.trim(),
+        rubro: f.rubro.trim(),
+        whatsapp: f.whatsapp.trim(),
+        necesidad: f.necesidad,
+        mensaje: f.mensaje.trim(),
+        pagina: window.location.pathname,
+        website: trampa,
+        t: desde ? Date.now() - desde : undefined,
+      }),
+    }).catch(() => {});
+  } catch {
+    // Si falla, la consulta sigue por WhatsApp.
+  }
+}
+
 export function ContactForm() {
   const [form, setForm] = useState<FormState>(vacio);
   const [error, setError] = useState<{ campo: Campo; mensaje: string } | null>(null);
+  const [trampa, setTrampa] = useState('');
+  const abierto = useRef(0);
+
+  useEffect(() => {
+    abierto.current = Date.now();
+  }, []);
 
   const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const v = e.target.value;
@@ -69,6 +102,7 @@ export function ContactForm() {
     }
     trackEvent('submit_form', { necesidad: form.necesidad });
     trackEvent('click_whatsapp', { origen: 'formulario' });
+    guardarConsulta(form, trampa, abierto.current);
     window.open(buildWhatsAppUrl(armarMensaje(form)), '_blank', 'noopener');
   };
 
@@ -79,7 +113,7 @@ export function ContactForm() {
       onSubmit={onSubmit}
       noValidate
       aria-label="Formulario de contacto"
-      className="flex flex-col gap-4 rounded-[20px] border border-line bg-surface p-[clamp(22px,3vw,32px)]"
+      className="relative flex flex-col gap-4 rounded-[20px] border border-line bg-surface p-[clamp(22px,3vw,32px)]"
     >
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-3.5">
         <label className={labelClasses}>
@@ -149,6 +183,14 @@ export function ContactForm() {
         </div>
       </fieldset>
 
+      {/* Campo trampa para robots: oculto para las personas y para los lectores de pantalla. */}
+      <div aria-hidden="true" className="absolute left-[-9999px] h-px w-px overflow-hidden">
+        <label>
+          Sitio web
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" value={trampa} onChange={(e) => setTrampa(e.target.value)} />
+        </label>
+      </div>
+
       <label className={labelClasses}>
         Mensaje (opcional)
         <Textarea name="mensaje" rows={3} value={form.mensaje} onChange={set('mensaje')} />
@@ -164,7 +206,7 @@ export function ContactForm() {
         Enviar por WhatsApp
       </button>
       <p className="m-0 text-[12.5px] text-muted">
-        Usamos tus datos solo para responderte. <Link href="/privacidad">Política de privacidad</Link>
+        Guardamos tus datos solo para responderte. <Link href="/privacidad">Política de privacidad</Link>
       </p>
     </form>
   );

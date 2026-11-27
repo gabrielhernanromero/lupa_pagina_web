@@ -64,7 +64,7 @@ export function PlanesTabs({ tabs }: { tabs: TabView[] }) {
   );
 }
 
-function PlanCard({ plan: p }: { plan: PlanView }) {
+export function PlanCard({ plan: p }: { plan: PlanView }) {
   return (
     <div
       className={cn(

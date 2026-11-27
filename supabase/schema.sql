@@ -86,3 +86,63 @@ on conflict (id) do update
   set public = excluded.public,
       file_size_limit = excluded.file_size_limit,
       allowed_mime_types = excluded.allowed_mime_types;
+
+-- =============================================================================
+-- Usuarios del panel /admin (además del acceso de emergencia de las variables
+-- de entorno ADMIN_EMAIL / ADMIN_PASSWORD). Las contraseñas se guardan cifradas.
+-- =============================================================================
+create table if not exists public.lupa_usuarios (
+  id             uuid primary key default gen_random_uuid(),
+  email          text not null unique check (email = lower(email) and email ~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'),
+  nombre         text not null check (char_length(nombre) between 1 and 80),
+  cargo          text check (char_length(cargo) <= 80),
+  linkedin       text check (char_length(linkedin) <= 300),
+  password_hash  text not null,
+  activo         boolean not null default true,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+
+drop trigger if exists lupa_usuarios_set_updated_at on public.lupa_usuarios;
+create trigger lupa_usuarios_set_updated_at
+  before update on public.lupa_usuarios
+  for each row execute function public.lupa_set_updated_at();
+
+-- Sin reglas públicas: solo el panel (clave secret) puede leer o escribir usuarios.
+alter table public.lupa_usuarios enable row level security;
+
+-- Autor de cada artículo. Nombre, cargo y link se copian al guardar para mostrarlos en el blog.
+alter table public.lupa_posts add column if not exists author_id uuid references public.lupa_usuarios (id) on delete set null;
+alter table public.lupa_posts add column if not exists author_name text;
+alter table public.lupa_posts add column if not exists author_role text;
+alter table public.lupa_posts add column if not exists author_url text;
+
+-- =============================================================================
+-- Consultas del formulario de contacto (bandeja del panel).
+-- =============================================================================
+create table if not exists public.lupa_consultas (
+  id          uuid primary key default gen_random_uuid(),
+  nombre      text not null check (char_length(nombre) between 1 and 120),
+  empresa     text check (char_length(empresa) <= 120),
+  rubro       text check (char_length(rubro) <= 120),
+  whatsapp    text not null check (char_length(whatsapp) between 6 and 40),
+  necesidad   text not null check (char_length(necesidad) <= 80),
+  mensaje     text check (char_length(mensaje) <= 2000),
+  pagina      text check (char_length(pagina) <= 300),   -- desde qué página escribió
+  estado      text not null default 'nueva' check (estado in ('nueva', 'respondida', 'archivada')),
+  notas       text check (char_length(notas) <= 4000),   -- notas internas
+  ip_hash     text,                                      -- para frenar spam, sin guardar la IP
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists lupa_consultas_estado_idx on public.lupa_consultas (estado, created_at desc);
+create index if not exists lupa_consultas_ip_idx on public.lupa_consultas (ip_hash, created_at desc);
+
+drop trigger if exists lupa_consultas_set_updated_at on public.lupa_consultas;
+create trigger lupa_consultas_set_updated_at
+  before update on public.lupa_consultas
+  for each row execute function public.lupa_set_updated_at();
+
+-- Sin reglas públicas: las consultas entran por la API del sitio (clave secret) y solo se ven en el panel.
+alter table public.lupa_consultas enable row level security;

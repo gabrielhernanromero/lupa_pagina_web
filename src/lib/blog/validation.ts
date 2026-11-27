@@ -87,6 +87,7 @@ const postSchema = z.object({
   tags: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
   published: z.boolean(),
   template_id: z.uuid().nullish(),
+  author_id: z.uuid().nullish(),
 });
 
 export interface PostInput {
@@ -99,13 +100,15 @@ export interface PostInput {
   tags: string[];
   published: boolean;
   template_id: string | null;
+  author_id: string | null;
 }
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
 function firstIssue(error: z.ZodError): string {
-  const issue = error.issues[0];
-  return issue?.message && !issue.message.startsWith('Invalid') ? issue.message : 'Hay datos inválidos en el artículo.';
+  // Nuestros mensajes están en español y terminan con punto; los genéricos de zod (en inglés) se reemplazan.
+  const msg = error.issues[0]?.message;
+  return msg && msg.endsWith('.') ? msg : 'Hay datos inválidos en el artículo.';
 }
 
 function sanitizeBlocks(blocks: z.infer<typeof blocksSchema>): SavedBlocksPayload {
@@ -143,6 +146,7 @@ export function parsePostInput(body: unknown): Result<PostInput> {
       tags: Array.from(new Set(p.tags)),
       published: p.published,
       template_id: blocks ? (p.template_id ?? null) : null,
+      author_id: p.author_id ?? null,
     },
   };
 }

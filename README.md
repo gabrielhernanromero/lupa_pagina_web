@@ -42,8 +42,9 @@ npm run dev                  # http://localhost:3000
 | `SUPABASE_URL` | URL del proyecto de Supabase del blog. |
 | `SUPABASE_PUBLISHABLE_KEY` | Clave *publishable* (o *anon* en proyectos viejos). Solo puede leer artículos publicados. |
 | `SUPABASE_SECRET_KEY` | Clave *secret* (o *service_role*). **Secreta**: solo la usa el servidor detrás del login. |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Usuario del panel `/admin`. |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Acceso de emergencia al panel `/admin`. El equipo entra con sus propios usuarios (ver *Usuarios*). |
 | `AUTH_SECRET` | Firma de la sesión del panel. Se genera con `openssl rand -base64 32`. |
+| `SMTP_PASS` | Opcional. Contraseña de contacto@ para que cada consulta nueva llegue por mail (Hostinger). Sin esto, las consultas igual quedan en el panel. |
 
 Sin las variables de Supabase el sitio funciona igual: el blog se muestra vacío y el panel avisa que falta conectarlo.
 
@@ -58,6 +59,7 @@ En Vercel: *Project → Settings → Environment Variables*.
 | `src/config/site.ts` | Nombre, dominio, WhatsApp, email, redes, mensajes de WhatsApp y menú |
 | `src/data/planes.ts` | Planes por categoría, notas de cada tab, extras y línea de vigencia de precios |
 | `src/data/servicios.ts` | Los 4 pilares de servicio |
+| `src/data/paginas-servicios.ts` | Contenido de las páginas `/servicios/...` |
 | `src/data/faq.ts` | Preguntas frecuentes (alimenta el acordeón **y** el JSON-LD `FAQPage`) |
 | `src/data/casos.ts` | Casos de clientes y la frase de la franja de confianza |
 | `src/data/home.ts` | Problemas, pasos del proceso, beneficios, equipo y opciones del formulario |
@@ -131,11 +133,23 @@ Todo lo del blog en Supabase lleva el prefijo `lupa_` (tablas `lupa_posts` y `lu
 - Las imágenes se validan por su contenido real (JPG, PNG, WebP, GIF o AVIF, hasta 4 MB).
 - `/admin` y `/api` están bloqueados en `robots.txt` y el panel lleva `noindex`.
 
+## Páginas por servicio
+
+`/servicios/sitios-web`, `/servicios/seo-geo`, `/servicios/marketing-contenido` y `/servicios/sistemas-automatizaciones-ia`. El contenido está en `src/data/paginas-servicios.ts` (título para Google, introducción, para quién es, planes, extras y preguntas). Los planes y precios se toman de `src/data/planes.ts`, así siempre coinciden con la home. Cada página tiene JSON-LD `Service`, `BreadcrumbList` y `FAQPage`, y está en el sitemap y en `/llms.txt`.
+
+## Bandeja de consultas
+
+El formulario de contacto guarda cada consulta en Supabase (`lupa_consultas`) y además abre WhatsApp como antes. En `/admin/consultas` se ven todas, se responden por WhatsApp con un clic, se marcan como respondidas o archivadas y se les agrega una nota interna. Si está `SMTP_PASS`, cada consulta nueva también llega por mail. Freno de spam: campo trampa invisible, tiempo mínimo de llenado y hasta 5 envíos cada 10 minutos por conexión (sin guardar la IP).
+
+## Usuarios
+
+En `/admin/usuarios` se crean los usuarios del equipo (nombre, email, cargo, LinkedIn y contraseña). Cada artículo puede firmarse con un autor: el blog muestra la firma y Google recibe el autor como `Person`. Las contraseñas se guardan cifradas (scrypt) y cada persona puede cambiar la suya. Un usuario desactivado pierde el acceso al instante.
+
 ## Analítica (GA4)
 
 | Evento | Parámetros |
 | --- | --- |
-| `click_whatsapp` | `origen`: `header` · `hero` · `plan` · `casos` · `footer` · `flotante` · `formulario` · `404` · `blog` (y `plan` cuando viene de una card) |
+| `click_whatsapp` | `origen`: `header` · `hero` · `plan` · `casos` · `footer` · `flotante` · `formulario` · `404` · `blog` · `servicio` (y `plan` o `servicio` según de dónde viene) |
 | `submit_form` | `necesidad` |
 | `view_plan_tab` | `tab` |
 | `read_progress` | `slug`, `percent` (25, 50, 75 y 100 % de un artículo leído) |
@@ -171,4 +185,5 @@ Todo lo del blog en Supabase lleva el prefijo `lupa_` (tablas `lupa_posts` y `lu
 ## Fase 2
 
 - ✅ Blog y panel `/admin` (Supabase + NextAuth v5 + TipTap).
-- Carpetas reservadas, sin páginas ni links visibles: `/servicios/[slug]` y `/casos/[slug]`.
+- ✅ Páginas por servicio, bandeja de consultas y usuarios del panel.
+- Carpeta reservada, sin páginas ni links visibles: `/casos/[slug]`.
