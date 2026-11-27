@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { publicClient } from './supabase';
+import { TABLES, publicClient } from './supabase';
 import { POST_SUMMARY_FIELDS, type Post, type PostSummary } from './types';
 
 /**
@@ -16,7 +16,7 @@ export async function getPublishedPosts(limit?: number): Promise<PostSummary[]> 
   const db = publicClient();
   if (!db) return [];
   let query = db
-    .from('posts')
+    .from(TABLES.posts)
     .select(POST_SUMMARY_FIELDS)
     .eq('published', true)
     .order('published_at', { ascending: false, nullsFirst: false });
@@ -32,7 +32,7 @@ export async function getPublishedPosts(limit?: number): Promise<PostSummary[]> 
 export async function getPublishedPost(slug: string): Promise<Post | null> {
   const db = publicClient();
   if (!db) return null;
-  const { data, error } = await db.from('posts').select('*').eq('slug', slug).eq('published', true).maybeSingle();
+  const { data, error } = await db.from(TABLES.posts).select('*').eq('slug', slug).eq('published', true).maybeSingle();
   if (error) {
     logError('getPublishedPost', error);
     return null;
@@ -47,7 +47,7 @@ export async function getRelatedPosts(post: Post, limit = 3): Promise<PostSummar
   const related: PostSummary[] = [];
   if (post.tags.length > 0) {
     const { data, error } = await db
-      .from('posts')
+      .from(TABLES.posts)
       .select(POST_SUMMARY_FIELDS)
       .eq('published', true)
       .neq('id', post.id)
@@ -60,7 +60,7 @@ export async function getRelatedPosts(post: Post, limit = 3): Promise<PostSummar
   if (related.length < limit) {
     const exclude = [post.id, ...related.map((p) => p.id)];
     const { data, error } = await db
-      .from('posts')
+      .from(TABLES.posts)
       .select(POST_SUMMARY_FIELDS)
       .eq('published', true)
       .not('id', 'in', `(${exclude.join(',')})`)
@@ -75,7 +75,7 @@ export async function getRelatedPosts(post: Post, limit = 3): Promise<PostSummar
 export async function getPublishedSlugs(): Promise<{ slug: string; updated_at: string }[]> {
   const db = publicClient();
   if (!db) return [];
-  const { data, error } = await db.from('posts').select('slug, updated_at').eq('published', true);
+  const { data, error } = await db.from(TABLES.posts).select('slug, updated_at').eq('published', true);
   if (error) {
     logError('getPublishedSlugs', error);
     return [];

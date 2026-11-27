@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { rejectIfNotAdmin } from '@/lib/admin-guard';
 import { apiError, dbError, readJson } from '@/lib/blog/api';
 import { revalidateBlog } from '@/lib/blog/revalidate';
-import { adminClient } from '@/lib/blog/supabase';
+import { TABLES, adminClient } from '@/lib/blog/supabase';
 import { isUuid, parsePostInput } from '@/lib/blog/validation';
 
 interface Params {
@@ -11,7 +11,7 @@ interface Params {
 }
 
 async function getExisting(id: string) {
-  return adminClient().from('posts').select('slug, published, published_at').eq('id', id).maybeSingle();
+  return adminClient().from(TABLES.posts).select('slug, published, published_at').eq('id', id).maybeSingle();
 }
 
 /** Guardar cambios de un artículo. */
@@ -31,7 +31,7 @@ export async function PATCH(req: Request, { params }: Params) {
 
   const published_at = input.published && !existing.published_at ? new Date().toISOString() : existing.published_at;
   const { data, error } = await adminClient()
-    .from('posts')
+    .from(TABLES.posts)
     .update({ ...input, published_at })
     .eq('id', id)
     .select('id, slug, published')
@@ -54,7 +54,7 @@ export async function DELETE(_req: Request, { params }: Params) {
   if (readError) return dbError('leer artículo', readError);
   if (!existing) return apiError('Artículo inexistente.', 404);
 
-  const { error } = await adminClient().from('posts').delete().eq('id', id);
+  const { error } = await adminClient().from(TABLES.posts).delete().eq('id', id);
   if (error) return dbError('borrar artículo', error);
 
   if (existing.published) revalidateBlog([existing.slug]);

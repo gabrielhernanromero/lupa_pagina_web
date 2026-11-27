@@ -18,7 +18,12 @@ const secretKey = process.env.SUPABASE_SECRET_KEY;
 
 const options = { auth: { persistSession: false, autoRefreshToken: false } } as const;
 
-export const BUCKET = 'blog-images';
+/**
+ * Nombres en Supabase. Llevan el prefijo "lupa" para poder compartir el proyecto
+ * con otros sitios (por ejemplo, el blog de Iron Tower) sin pisar sus tablas ni sus imágenes.
+ */
+export const TABLES = { posts: 'lupa_posts', templates: 'lupa_post_templates' } as const;
+export const BUCKET = 'lupa-blog-images';
 
 /** true si el blog está conectado a Supabase. Sin esto, el blog se muestra vacío en vez de romper el build. */
 export function isBlogConfigured(): boolean {

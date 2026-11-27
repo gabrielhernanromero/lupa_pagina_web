@@ -114,14 +114,17 @@ public/firma/logo-firma.png   Logo para la firma de mail (600×180, usar a 300×
 
 ### Puesta en marcha (una sola vez)
 
-1. Crear un proyecto en [supabase.com](https://supabase.com). Región: *East US (North Virginia)*, la misma donde corren por defecto las funciones de Vercel.
-2. *SQL Editor → New query*: pegar todo `supabase/schema.sql` y tocar **Run**. Crea las tablas, las reglas de seguridad y el lugar para las imágenes.
-3. *Project Settings → Data API* (URL) y *API Keys* (claves): copiar los valores a las variables de entorno de arriba, en Vercel y en `.env.local`.
-4. Cargar `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `AUTH_SECRET` y volver a publicar el sitio.
+Todo lo del blog en Supabase lleva el prefijo `lupa_` (tablas `lupa_posts` y `lupa_post_templates`, bucket `lupa-blog-images`). Por eso puede vivir en un proyecto que ya se usa para otra cosa, como el del blog de Iron Tower, sin tocar sus tablas ni sus imágenes.
+
+1. Elegir el proyecto de Supabase donde va a vivir el blog (uno existente o uno nuevo).
+2. *SQL Editor → New query*: pegar todo `supabase/schema.sql` y tocar **Run**. Crea las tablas, las reglas de seguridad y el bucket de imágenes. Se puede correr más de una vez.
+3. *Project Settings → API Keys*: copiar la clave *publishable* (o *anon*) y la *secret* (o *service_role*). La URL del proyecto está en el botón **Connect**.
+4. Cargar las variables de entorno de arriba en Vercel (y en `.env.local` para trabajar en local) y volver a publicar el sitio.
 
 ### Seguridad
 
 - La web pública lee con la clave *publishable*: por las reglas de la base solo ve artículos publicados.
+- La clave *secret* da acceso a todo el proyecto de Supabase (también a lo que no es de Lupa): solo vive en las variables de entorno del servidor, nunca en el navegador.
 - Todo lo que escribe pasa por la API del panel, que verifica la sesión en cada pedido, valida los datos y limpia el HTML (saca scripts, estilos y eventos).
 - Las imágenes se validan por su contenido real (JPG, PNG, WebP, GIF o AVIF, hasta 4 MB).
 - `/admin` y `/api` están bloqueados en `robots.txt` y el panel lleva `noindex`.
